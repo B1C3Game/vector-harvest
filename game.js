@@ -300,7 +300,7 @@ function render() {
   } else if (program.length > 0) {
     statusElement.textContent = `Ready: ${program.length}/4 commands. This route crosses no pickups.`;
   } else {
-    statusElement.textContent = `Magnitude ${selectedLength} selected. Choose a direction.`;
+    statusElement.textContent = `Length ${selectedLength} selected. Choose a direction.`;
   }
   document.querySelectorAll("[data-length]").forEach((button) => {
     button.classList.toggle("active", Number(button.dataset.length) === selectedLength);

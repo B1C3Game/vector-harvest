@@ -10,9 +10,9 @@ This prototype tests whether a tiny vector language can support satisfying spati
 
 Open `index.html` in a browser.
 
-- `1`–`4` chooses a vector magnitude; an arrow appends it to the route.
+- `1`–`4` chooses a segment length; an arrow appends it to the route.
 - `Space` skips a segment.
-- A route can contain up to four commands, including repeated magnitudes such as `4↓, 4←, 3↑, 4→`.
+- A route can contain up to four commands, including repeated lengths such as `4↓, 4←, 3↑, 4→`.
 - `Backspace` clears the latest assignment.
 - `Delete` resets the complete route.
 - `Enter` executes the programmed route; untouched segments are skipped automatically.
