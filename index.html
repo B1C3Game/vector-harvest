@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A score-chasing game about programming movement with four linked vectors.">
+  <title>1 · 2 · 3 · 4</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="game-shell">
+    <header class="topbar">
+      <div class="title-block">
+        <p class="eyebrow">VECTOR HARVEST</p>
+        <h1>1 · 2 · 3 · 4</h1>
+      </div>
+      <div class="stats" aria-label="Game status">
+        <div><span>Capital</span><strong id="capital">0</strong></div>
+        <div><span>Harvest</span><strong id="score">0</strong></div>
+        <div><span>Round</span><strong><span id="round">1</span>/10</strong></div>
+        <div><span>Turn</span><strong><span id="turn">1</span>/10</strong></div>
+      </div>
+    </header>
+
+    <div class="build-strip" aria-label="Campaign modifiers">
+      <span>Yield <strong id="yield-multiplier">×1.00</strong></span>
+      <span>Market <strong id="market-level">+0</strong></span>
+      <span>Wealth tax <strong id="tax-rate">10%</strong></span>
+    </div>
+
+    <section class="play-area">
+      <div class="board-wrap">
+        <canvas id="board" width="800" height="800" aria-label="20 by 20 collection grid"></canvas>
+        <div id="game-over" class="game-over" hidden>
+          <div class="ledger">
+            <p class="eyebrow" id="ledger-label">ROUND LEDGER</p>
+            <h2 id="ledger-title">Round complete</h2>
+            <dl>
+              <div><dt>Opening capital</dt><dd id="ledger-opening">0</dd></div>
+              <div><dt>Harvest</dt><dd id="ledger-harvest">+0</dd></div>
+              <div><dt>Taxable wealth</dt><dd id="ledger-gross">0</dd></div>
+              <div><dt id="ledger-tax-label">Wealth tax 10%</dt><dd id="ledger-tax">−0</dd></div>
+              <div class="ledger-total"><dt>Closing capital</dt><dd id="final-score">0</dd></div>
+            </dl>
+            <p class="capital-history"><span>Capital history</span><strong id="capital-history">0</strong></p>
+            <div id="upgrade-choice">
+              <p class="choice-label">CHOOSE ONE MECHANIC</p>
+              <div class="upgrade-grid">
+                <button type="button" data-upgrade="yield"><strong>×1.5 Yield</strong><span>Future pickup values compound.</span></button>
+                <button type="button" data-upgrade="density"><strong>Dense Market</strong><span>+8 starting and +1 per-turn pickup.</span></button>
+                <button type="button" data-upgrade="shelter"><strong>Tax Shelter</strong><span>−2 percentage points permanently.</span></button>
+              </div>
+            </div>
+            <button id="restart" class="restart-button" type="button" hidden>New campaign</button>
+          </div>
+        </div>
+      </div>
+
+      <aside class="program-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">CURRENT ROUTE</p>
+            <h2>Program the chain</h2>
+          </div>
+          <button id="clear" class="icon-button" type="button" title="Clear route" aria-label="Clear route">↺</button>
+        </div>
+
+        <div class="magnitude-picker" aria-label="Vector magnitude">
+          <span>Magnitude</span>
+          <div>
+            <button type="button" data-length="1" class="active">1</button>
+            <button type="button" data-length="2">2</button>
+            <button type="button" data-length="3">3</button>
+            <button type="button" data-length="4">4</button>
+          </div>
+        </div>
+
+        <div id="segments" class="segments" aria-label="Movement segments"></div>
+
+        <div class="direction-pad" aria-label="Direction controls">
+          <button type="button" data-direction="up" aria-label="Move selected segment up">↑</button>
+          <button type="button" data-direction="left" aria-label="Move selected segment left">←</button>
+          <button type="button" data-direction="skip" class="skip-button">SKIP</button>
+          <button type="button" data-direction="right" aria-label="Move selected segment right">→</button>
+          <button type="button" data-direction="down" aria-label="Move selected segment down">↓</button>
+        </div>
+
+        <button id="execute" class="execute-button" type="button" disabled>
+          <span>RUN ROUTE</span>
+          <span id="route-value">+0</span>
+        </button>
+        <p id="status" class="status" aria-live="polite">Choose a direction for segment 1.</p>
+
+        <div class="legend" aria-label="Pickup legend">
+          <span><i class="gem stable"></i> persistent reward</span>
+          <span><i class="gem urgent"></i> timed reward</span>
+          <span>At risk: <strong id="at-risk">0</strong></span>
+        </div>
+      </aside>
+    </section>
+
+    <footer>
+      <span><kbd>1</kbd>–<kbd>4</kbd> magnitude</span>
+      <span><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> append vector</span>
+      <span><kbd>Space</kbd> skip</span>
+      <span><kbd>Enter</kbd> run</span>
+      <span><kbd>Backspace</kbd> undo</span>
+      <span><kbd>Del</kbd> reset route</span>
+    </footer>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>
