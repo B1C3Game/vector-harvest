@@ -65,8 +65,14 @@
           <button id="clear" class="icon-button" type="button" title="Clear route" aria-label="Clear route">↺</button>
         </div>
 
+        <div class="route-steps" aria-label="Route programming steps">
+          <strong>1 Choose length</strong>
+          <span>2 Add direction</span>
+          <span>3 Press Enter</span>
+        </div>
+
         <div class="magnitude-picker" aria-label="Segment length">
-          <span>Length</span>
+          <span id="length-label">Selected length: 1</span>
           <div>
             <button type="button" data-length="1" class="active">1</button>
             <button type="button" data-length="2">2</button>
@@ -86,14 +92,14 @@
         </div>
 
         <button id="execute" class="execute-button" type="button" disabled>
-          <span>RUN ROUTE</span>
+          <span>PRESS ENTER · RUN</span>
           <span id="route-value">+0</span>
         </button>
         <p id="status" class="status" aria-live="polite">Choose a direction for segment 1.</p>
 
         <div class="legend" aria-label="Pickup legend">
-          <span><i class="gem stable"></i> persistent reward</span>
-          <span><i class="gem urgent"></i> timed reward</span>
+          <span><i class="gem stable"></i> persistent pickup</span>
+          <span><i class="gem urgent"></i> timed pickup</span>
           <span>At risk: <strong id="at-risk">0</strong></span>
         </div>
       </aside>

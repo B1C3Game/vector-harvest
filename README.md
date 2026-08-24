@@ -17,7 +17,7 @@ Open `index.html` in a browser.
 - `Delete` resets the complete route.
 - `Enter` executes the programmed route; untouched segments are skipped automatically.
 
-Pickups are collected from every cell crossed, not only the endpoint. Values `2`, `3`, and `5` remain until collected. Timed values `8` and `13` remain for two turns; the small number beside them shows their remaining lifetime.
+Pickups are collected only at the endpoint of each segment, never from cells crossed along a segment. A four-command route can therefore harvest at most four pickups. Values `2`, `3`, and `5` remain until collected. Timed values `8` and `13` remain for two turns; the small number beside them shows their remaining lifetime.
 
 Each round contains ten turns. At round end, the current harvest is added to capital and the complete wealth is taxed. Choose one permanent mechanic before the next round: compound pickup yield by `1.5`, increase market density, or reduce wealth tax by two percentage points.
 

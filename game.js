@@ -38,6 +38,7 @@ const yieldMultiplierElement = document.querySelector("#yield-multiplier");
 const marketLevelElement = document.querySelector("#market-level");
 const taxRateElement = document.querySelector("#tax-rate");
 const capitalHistoryElement = document.querySelector("#capital-history");
+const lengthLabelElement = document.querySelector("#length-label");
 
 let player;
 let pickups;
@@ -157,6 +158,7 @@ function chooseUpgrade(upgradeName) {
 function buildRoute() {
   const cells = [{ ...player }];
   const corners = [{ ...player }];
+  const harvestCellIndexes = [];
   let current = { ...player };
   let inBounds = true;
 
@@ -172,13 +174,15 @@ function buildRoute() {
       if (current.x < 0 || current.x >= GRID_SIZE || current.y < 0 || current.y >= GRID_SIZE) inBounds = false;
     }
     corners.push({ ...current });
+    harvestCellIndexes.push(cells.length - 1);
   });
 
-  return { cells, corners, inBounds };
+  return { cells, corners, harvestCellIndexes, inBounds };
 }
 
 function routePickups(route) {
-  return pickups.filter((pickup) => route.cells.some((cell) => sameCell(cell, pickup)));
+  const harvestCells = route.harvestCellIndexes.map((index) => route.cells[index]);
+  return pickups.filter((pickup) => harvestCells.some((cell) => sameCell(cell, pickup)));
 }
 
 function collectAtCell(cell) {
@@ -218,7 +222,7 @@ function executeRoute() {
   activeRoute = route;
 
   render();
-  animateRoute(route.cells, () => {
+  animateRoute(route, () => {
     pickups = pickups
       .map((pickup) => pickup.expiresIn === null
         ? pickup
@@ -238,14 +242,15 @@ function executeRoute() {
   });
 }
 
-function animateRoute(cells, onComplete) {
+function animateRoute(route, onComplete) {
   let index = 0;
+  const harvestCellIndexes = new Set(route.harvestCellIndexes);
   const step = () => {
-    player = { ...cells[index] };
-    collectAtCell(player);
+    player = { ...route.cells[index] };
+    if (harvestCellIndexes.has(index)) collectAtCell(player);
     drawBoard();
     index += 1;
-    if (index < cells.length) {
+    if (index < route.cells.length) {
       animationFrame = window.setTimeout(step, 65);
     } else {
       onComplete();
@@ -283,6 +288,7 @@ function render() {
   const ready = program.length > 0 && route.inBounds;
 
   executeButton.disabled = !ready || gameOverElement.hidden === false || animating;
+  executeButton.classList.toggle("ready", ready && gameOverElement.hidden && !animating);
   routeValueElement.textContent = `+${routeValue}`;
   scoreElement.textContent = score;
   capitalElement.textContent = capital.toLocaleString();
@@ -296,12 +302,13 @@ function render() {
   if (!route.inBounds) {
     statusElement.textContent = "Route leaves the board. Redirect one of the links.";
   } else if (routeValue > 0) {
-    statusElement.textContent = `Ready: ${program.length}/4 commands cross ${available.length} pickup${available.length === 1 ? "" : "s"} worth ${routeValue}.`;
+    statusElement.textContent = `ROUTE READY — press Enter to harvest ${available.length} segment endpoint${available.length === 1 ? "" : "s"} worth ${routeValue}.`;
   } else if (program.length > 0) {
-    statusElement.textContent = `Ready: ${program.length}/4 commands. This route crosses no pickups.`;
+    statusElement.textContent = `ROUTE READY — press Enter to move. Segment endpoints are empty.`;
   } else {
-    statusElement.textContent = `Length ${selectedLength} selected. Choose a direction.`;
+    statusElement.textContent = `Length ${selectedLength} selected. Use 1–4 to change it, then choose a direction.`;
   }
+  lengthLabelElement.textContent = `Selected length: ${selectedLength}`;
   document.querySelectorAll("[data-length]").forEach((button) => {
     button.classList.toggle("active", Number(button.dataset.length) === selectedLength);
   });

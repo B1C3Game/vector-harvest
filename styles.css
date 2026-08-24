@@ -128,12 +128,25 @@ canvas { display: block; width: 100%; height: 100%; }
   font-size: 1.35rem;
 }
 
+.route-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 12px;
+  border: 1px solid var(--ink);
+  background: var(--white);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+}
+.route-steps > * { padding: 6px; border-right: 1px solid var(--ink); }
+.route-steps > *:last-child { border-right: 0; }
+.route-steps strong { background: var(--acid); }
+
 .magnitude-picker { margin: 20px 0 10px; }
 .magnitude-picker > span { display: block; margin-bottom: 6px; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; }
 .magnitude-picker > div { display: grid; grid-template-columns: repeat(4, 1fr); }
 .magnitude-picker button { height: 38px; border: 2px solid var(--ink); border-right: 0; background: var(--white); cursor: pointer; }
 .magnitude-picker button:last-child { border-right: 2px solid var(--ink); }
-.magnitude-picker button.active { background: var(--acid); font-weight: 900; }
+.magnitude-picker button.active { position: relative; z-index: 1; background: var(--acid); box-shadow: inset 0 0 0 2px var(--ink); font-weight: 900; }
 
 .segments { display: grid; gap: 8px; margin: 10px 0 22px; }
 .segment {
@@ -188,6 +201,7 @@ canvas { display: block; width: 100%; height: 100%; }
   cursor: pointer;
 }
 .execute-button:disabled { background: var(--panel); cursor: not-allowed; opacity: 0.65; }
+.execute-button.ready { box-shadow: 4px 4px 0 var(--ink); transform: translate(-2px, -2px); }
 .status { min-height: 38px; margin: 10px 0 20px; font-size: 0.78rem; line-height: 1.4; }
 .legend { display: flex; flex-wrap: wrap; gap: 14px; border-top: 1px solid var(--ink); padding-top: 14px; font-size: 0.7rem; }
 .legend span { display: flex; align-items: center; gap: 6px; }
