@@ -147,6 +147,7 @@ canvas { display: block; width: 100%; height: 100%; }
 .magnitude-picker button { height: 38px; border: 2px solid var(--ink); border-right: 0; background: var(--white); cursor: pointer; }
 .magnitude-picker button:last-child { border-right: 2px solid var(--ink); }
 .magnitude-picker button.active { position: relative; z-index: 1; background: var(--acid); box-shadow: inset 0 0 0 2px var(--ink); font-weight: 900; }
+.magnitude-picker button:disabled { background: var(--panel); color: rgba(32, 33, 31, 0.45); cursor: not-allowed; }
 
 .segments { display: grid; gap: 8px; margin: 10px 0 22px; }
 .segment {
@@ -277,6 +278,11 @@ kbd { display: inline-block; min-width: 22px; margin-right: 2px; border: 1px sol
 }
 
 @media (min-width: 821px) and (max-height: 800px) {
+  .game-over { padding: 16px; }
+  .ledger h2 { margin-bottom: 8px; }
+  .ledger dl { margin-bottom: 10px; }
+  .ledger dl div { padding: 5px 0; }
+  .capital-history { margin-bottom: 10px; }
   .program-panel { padding: 2px 0; }
   .segments { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .segment {

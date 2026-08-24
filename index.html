@@ -25,6 +25,7 @@
     <div class="build-strip" aria-label="Campaign modifiers">
       <span>Yield <strong id="yield-multiplier">×1.00</strong></span>
       <span>Market <strong id="market-level">+0</strong></span>
+      <span>Red life <strong id="timed-lifetime">2 turns</strong></span>
       <span>Wealth tax <strong id="tax-rate">0.00%</strong></span>
     </div>
 
@@ -40,16 +41,15 @@
               <div><dt>Harvest</dt><dd id="ledger-harvest">+0</dd></div>
               <div><dt>Taxable wealth</dt><dd id="ledger-gross">0</dd></div>
               <div><dt id="ledger-tax-label">Wealth tax 0.00%</dt><dd id="ledger-tax">−0</dd></div>
+              <div><dt>Total tax paid</dt><dd id="total-tax-paid">0</dd></div>
+              <div><dt>Treasury program</dt><dd id="treasury-benefit">100 until red +1 turn</dd></div>
               <div class="ledger-total"><dt>Closing capital</dt><dd id="final-score">0</dd></div>
             </dl>
             <p class="capital-history"><span>Capital history</span><strong id="capital-history">0</strong></p>
+            <p class="capital-history"><span>Cumulative tax paid</span><strong id="tax-paid-history">0</strong></p>
             <div id="upgrade-choice">
-              <p class="choice-label">CHOOSE ONE MECHANIC</p>
-              <div class="upgrade-grid">
-                <button type="button" data-upgrade="yield"><strong>×1.5 Yield</strong><span>Future pickup values compound.</span></button>
-                <button type="button" data-upgrade="density"><strong>Dense Market</strong><span>+8 starting and +1 per-turn pickup.</span></button>
-                <button type="button" data-upgrade="shelter"><strong>Tax Shelter</strong><span>Remove 20% of the current tax rate.</span></button>
-              </div>
+              <p class="choice-label">CHOOSE ONE OFFER</p>
+              <div id="upgrade-grid" class="upgrade-grid"></div>
             </div>
             <button id="restart" class="restart-button" type="button" hidden>New campaign</button>
           </div>
@@ -72,12 +72,12 @@
         </div>
 
         <div class="magnitude-picker" aria-label="Segment length">
-          <span id="length-label">Selected length: 1</span>
+          <span id="length-label">Selected length: 1 · turn supply</span>
           <div>
-            <button type="button" data-length="1" class="active">1</button>
-            <button type="button" data-length="2">2</button>
-            <button type="button" data-length="3">3</button>
-            <button type="button" data-length="4">4</button>
+            <button type="button" data-length="1" class="active">1 ×1</button>
+            <button type="button" data-length="2">2 ×1</button>
+            <button type="button" data-length="3">3 ×1</button>
+            <button type="button" data-length="4">4 ×1</button>
           </div>
         </div>
 

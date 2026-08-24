@@ -38,7 +38,12 @@ const ledgerTaxElement = document.querySelector("#ledger-tax");
 const yieldMultiplierElement = document.querySelector("#yield-multiplier");
 const marketLevelElement = document.querySelector("#market-level");
 const taxRateElement = document.querySelector("#tax-rate");
+const totalTaxPaidElement = document.querySelector("#total-tax-paid");
 const capitalHistoryElement = document.querySelector("#capital-history");
+const taxPaidHistoryElement = document.querySelector("#tax-paid-history");
+const treasuryBenefitElement = document.querySelector("#treasury-benefit");
+const timedLifetimeElement = document.querySelector("#timed-lifetime");
+const upgradeGridElement = document.querySelector("#upgrade-grid");
 const lengthLabelElement = document.querySelector("#length-label");
 
 let player;
@@ -57,7 +62,12 @@ let round;
 let yieldMultiplier;
 let marketLevel;
 let wealthTaxRate;
+let totalTaxPaid;
 let capitalHistory;
+let taxPaidHistory;
+let timedLifetimeBonus;
+let lengthSupply;
+let upgradeOffers;
 
 function randomInt(minimum, maximum) {
   return Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
@@ -69,6 +79,30 @@ function sameCell(first, second) {
 
 function occupiedByPickup(cell) {
   return pickups.some((pickup) => sameCell(pickup, cell));
+}
+
+function treasuryLifetimeBonus() {
+  return Math.min(2, Math.floor(totalTaxPaid / 100));
+}
+
+function timedPickupLifetime() {
+  return 2 + timedLifetimeBonus + treasuryLifetimeBonus();
+}
+
+function rollLengthSupply() {
+  return Object.fromEntries(SEGMENT_LENGTHS.map((length) => {
+    const roll = Math.random();
+    const uses = roll < 0.5 ? 1 : roll < 0.8 ? 2 : roll < 0.95 ? 3 : 4;
+    return [length, uses];
+  }));
+}
+
+function usedLengthCount(length) {
+  return program.filter((command) => command.length === length).length;
+}
+
+function remainingLengthUses(length) {
+  return lengthSupply[length] - usedLengthCount(length);
 }
 
 function spawnPickup() {
@@ -83,7 +117,7 @@ function spawnPickup() {
       ...cell,
       id: nextPickupId,
       value,
-      expiresIn: isTimed ? 2 : null,
+      expiresIn: isTimed ? timedPickupLifetime() : null,
     });
     nextPickupId += 1;
     return;
@@ -109,12 +143,58 @@ function formatTaxRate(taxRate, precision = taxRate > 0 && taxRate < 0.0001 ? 4 
   return `${(taxRate * 100).toFixed(precision)}%`;
 }
 
+function updateTreasuryDisplay() {
+  const treasuryBonus = treasuryLifetimeBonus();
+  timedLifetimeElement.textContent = `${timedPickupLifetime()} turns`;
+  if (treasuryBonus >= 2) {
+    treasuryBenefitElement.textContent = "Red +2 turns active";
+  } else if (treasuryBonus === 1) {
+    treasuryBenefitElement.textContent = `Red +1 active · ${200 - totalTaxPaid} to +2`;
+  } else {
+    treasuryBenefitElement.textContent = `${100 - totalTaxPaid} until red +1 turn`;
+  }
+}
+
+function createUpgradeOffers() {
+  const availableTypes = ["yield", "density", "shelter"];
+  if (timedLifetimeBonus < 2) availableTypes.push("lifetime");
+  const offerTypes = availableTypes
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 3);
+  return offerTypes.map((type) => {
+    if (type === "yield") {
+      const factor = [1.2, 1.3, 1.4, 1.5, 1.6][randomInt(0, 4)];
+      return { type, value: factor, title: `×${factor.toFixed(1)} Yield`, detail: "Future pickup values compound." };
+    }
+    if (type === "density") {
+      const levels = randomInt(1, 2);
+      return { type, value: levels, title: `Market +${levels * 8}`, detail: `+${levels * 8} starting and +${levels} per-turn pickup.` };
+    }
+    if (type === "lifetime") {
+      return { type, value: 1, title: "Red +1 turn", detail: "Timed pickups remain longer permanently." };
+    }
+    const reduction = [0.1, 0.2, 0.3][randomInt(0, 2)];
+    return { type, value: reduction, title: `Shelter ${Math.round(reduction * 100)}%`, detail: "Remove this share of the current tax rate." };
+  });
+}
+
+function renderUpgradeOffers() {
+  upgradeGridElement.replaceChildren(...upgradeOffers.map((offer, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.innerHTML = `<strong>${offer.title}</strong><span>${offer.detail}</span>`;
+    button.addEventListener("click", () => chooseUpgrade(index));
+    return button;
+  }));
+}
+
 function startRound() {
   clearTimeout(animationFrame);
   player = { x: 9, y: 9 };
   pickups = [];
   cellTaxes = generateCellTaxes();
   program = [];
+  lengthSupply = rollLengthSupply();
   selectedLength = 1;
   score = 0;
   turn = 1;
@@ -131,7 +211,11 @@ function resetGame() {
   yieldMultiplier = 1;
   marketLevel = 0;
   wealthTaxRate = 0;
+  totalTaxPaid = 0;
   capitalHistory = [];
+  taxPaidHistory = [];
+  timedLifetimeBonus = 0;
+  upgradeOffers = [];
   nextPickupId = 1;
   restartButton.hidden = true;
   upgradeChoiceElement.hidden = false;
@@ -142,8 +226,10 @@ function closeRound() {
   const openingCapital = capital;
   const taxableWealth = openingCapital + score;
   const tax = Math.floor(taxableWealth * wealthTaxRate);
+  totalTaxPaid += tax;
   capital = taxableWealth - tax;
   capitalHistory.push(capital);
+  taxPaidHistory.push(totalTaxPaid);
 
   ledgerOpeningElement.textContent = openingCapital.toLocaleString();
   ledgerHarvestElement.textContent = `+${score.toLocaleString()}`;
@@ -152,7 +238,10 @@ function closeRound() {
   ledgerTaxElement.textContent = `−${tax.toLocaleString()}`;
   finalScoreElement.textContent = capital.toLocaleString();
   capitalHistoryElement.textContent = capitalHistory.map((value) => value.toLocaleString()).join(" → ");
+  taxPaidHistoryElement.textContent = taxPaidHistory.map((value) => value.toLocaleString()).join(" → ");
   capitalElement.textContent = capital.toLocaleString();
+  totalTaxPaidElement.textContent = totalTaxPaid.toLocaleString();
+  updateTreasuryDisplay();
 
   if (round >= MAX_ROUNDS) {
     ledgerLabelElement.textContent = "CAMPAIGN COMPLETE";
@@ -164,15 +253,20 @@ function closeRound() {
     ledgerTitleElement.textContent = "Tax assessed";
     upgradeChoiceElement.hidden = false;
     restartButton.hidden = true;
+    upgradeOffers = createUpgradeOffers();
+    renderUpgradeOffers();
   }
   gameOverElement.hidden = false;
 }
 
-function chooseUpgrade(upgradeName) {
+function chooseUpgrade(offerIndex) {
   if (round >= MAX_ROUNDS) return;
-  if (upgradeName === "yield") yieldMultiplier *= 1.5;
-  if (upgradeName === "density") marketLevel += 1;
-  if (upgradeName === "shelter") wealthTaxRate *= 0.8;
+  const offer = upgradeOffers[offerIndex];
+  if (!offer) return;
+  if (offer.type === "yield") yieldMultiplier *= offer.value;
+  if (offer.type === "density") marketLevel += offer.value;
+  if (offer.type === "lifetime") timedLifetimeBonus += offer.value;
+  if (offer.type === "shelter") wealthTaxRate *= 1 - offer.value;
   round += 1;
   startRound();
 }
@@ -208,7 +302,11 @@ function routePickups(route) {
 }
 
 function routeTax(route) {
-  return route.harvestCellIndexes.reduce((total, index) => total + taxAtCell(route.cells[index]), 0);
+  const endpointIndexes = new Set(route.harvestCellIndexes);
+  return route.cells.reduce((total, cell, index) => {
+    if (index === 0) return total;
+    return total + taxAtCell(cell) * (endpointIndexes.has(index) ? 1 : 0.5);
+  }, 0);
 }
 
 function collectAtCell(cell) {
@@ -224,6 +322,10 @@ function collectAtCell(cell) {
 function assignDirection(directionName) {
   if (gameOverElement.hidden === false || animating) return;
   if (program.length >= MAX_COMMANDS) return;
+  if (directionName !== "skip" && remainingLengthUses(selectedLength) <= 0) {
+    statusElement.textContent = `Length ${selectedLength} supply exhausted. Choose another length or undo.`;
+    return;
+  }
   program.push({ length: directionName === "skip" ? 0 : selectedLength, direction: directionName });
   render();
 }
@@ -263,6 +365,7 @@ function executeRoute() {
       return;
     }
     turn += 1;
+    lengthSupply = rollLengthSupply();
     for (let index = 0; index < 5 + marketLevel; index += 1) spawnPickup();
     clearProgram();
   });
@@ -273,8 +376,11 @@ function animateRoute(route, onComplete) {
   const harvestCellIndexes = new Set(route.harvestCellIndexes);
   const step = () => {
     player = { ...route.cells[index] };
+    if (index > 0) {
+      const taxMultiplier = harvestCellIndexes.has(index) ? 1 : 0.5;
+      wealthTaxRate = Math.min(1, wealthTaxRate + taxAtCell(player) * taxMultiplier);
+    }
     if (harvestCellIndexes.has(index)) {
-      wealthTaxRate = Math.min(1, wealthTaxRate + taxAtCell(player));
       collectAtCell(player);
     }
     drawBoard();
@@ -328,6 +434,7 @@ function render() {
   yieldMultiplierElement.textContent = `×${yieldMultiplier.toFixed(2)}`;
   marketLevelElement.textContent = `+${marketLevel}`;
   taxRateElement.textContent = formatTaxRate(wealthTaxRate);
+  updateTreasuryDisplay();
 
   if (!route.inBounds) {
     statusElement.textContent = "Route leaves the board. Redirect one of the links.";
@@ -337,9 +444,14 @@ function render() {
   } else {
     statusElement.textContent = `Length ${selectedLength} selected. Use 1–4 to change it, then choose a direction.`;
   }
-  lengthLabelElement.textContent = `Selected length: ${selectedLength}`;
+  lengthLabelElement.textContent = `Selected length: ${selectedLength} · ${remainingLengthUses(selectedLength)} left`;
   document.querySelectorAll("[data-length]").forEach((button) => {
-    button.classList.toggle("active", Number(button.dataset.length) === selectedLength);
+    const length = Number(button.dataset.length);
+    const remaining = remainingLengthUses(length);
+    button.textContent = `${length} ×${remaining}`;
+    button.disabled = remaining <= 0;
+    button.classList.toggle("active", length === selectedLength);
+    button.setAttribute("aria-label", `Length ${length}, ${remaining} use${remaining === 1 ? "" : "s"} remaining`);
   });
   drawBoard();
 }
@@ -440,10 +552,6 @@ document.querySelectorAll("[data-length]").forEach((button) => {
 executeButton.addEventListener("click", executeRoute);
 clearButton.addEventListener("click", clearProgram);
 restartButton.addEventListener("click", resetGame);
-document.querySelectorAll("[data-upgrade]").forEach((button) => {
-  button.addEventListener("click", () => chooseUpgrade(button.dataset.upgrade));
-});
-
 window.addEventListener("keydown", (event) => {
   if (event.repeat) {
     event.preventDefault();
@@ -467,7 +575,8 @@ window.addEventListener("keydown", (event) => {
     event.preventDefault();
     clearProgram();
   } else if (/^[1-4]$/.test(event.key)) {
-    selectedLength = Number(event.key);
+    const length = Number(event.key);
+    if (remainingLengthUses(length) > 0) selectedLength = length;
     render();
   }
 });
