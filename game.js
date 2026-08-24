@@ -39,9 +39,14 @@ const marketLevelElement = document.querySelector("#market-level");
 const taxRateElement = document.querySelector("#tax-rate");
 const capitalHistoryElement = document.querySelector("#capital-history");
 const lengthLabelElement = document.querySelector("#length-label");
+const roundLedgerElement = document.querySelector("#round-ledger");
+const bombLossElement = document.querySelector("#bomb-loss");
+const bombFinalScoreElement = document.querySelector("#bomb-final-score");
+const bombRestartButton = document.querySelector("#bomb-restart");
 
 let player;
 let pickups;
+let bombs;
 let program;
 let selectedLength;
 let score;
@@ -69,12 +74,16 @@ function occupiedByPickup(cell) {
   return pickups.some((pickup) => sameCell(pickup, cell));
 }
 
+function occupiedByBomb(cell) {
+  return bombs.some((bomb) => sameCell(bomb, cell));
+}
+
 function spawnPickup() {
   const isTimed = Math.random() < 0.3;
   const values = isTimed ? [8, 13] : [2, 3, 5];
   for (let attempt = 0; attempt < 100; attempt += 1) {
     const cell = { x: randomInt(0, GRID_SIZE - 1), y: randomInt(0, GRID_SIZE - 1) };
-    if (sameCell(cell, player) || occupiedByPickup(cell)) continue;
+    if (sameCell(cell, player) || occupiedByPickup(cell) || occupiedByBomb(cell)) continue;
 
     const value = Math.round(values[randomInt(0, values.length - 1)] * yieldMultiplier);
     pickups.push({
@@ -88,18 +97,31 @@ function spawnPickup() {
   }
 }
 
+function spawnBomb() {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    const cell = { x: randomInt(0, GRID_SIZE - 1), y: randomInt(0, GRID_SIZE - 1) };
+    if (sameCell(cell, player) || occupiedByPickup(cell) || occupiedByBomb(cell)) continue;
+    bombs.push(cell);
+    return;
+  }
+}
+
 function startRound() {
   clearTimeout(animationFrame);
   player = { x: 9, y: 9 };
   pickups = [];
+  bombs = [];
   program = [];
   selectedLength = 1;
   score = 0;
   turn = 1;
   animating = false;
   activeRoute = null;
+  roundLedgerElement.hidden = false;
+  bombLossElement.hidden = true;
   gameOverElement.hidden = true;
   for (let index = 0; index < 40 + marketLevel * 8; index += 1) spawnPickup();
+  for (let index = 0; index < 5 + round; index += 1) spawnBomb();
   render();
 }
 
@@ -185,6 +207,25 @@ function routePickups(route) {
   return pickups.filter((pickup) => harvestCells.some((cell) => sameCell(cell, pickup)));
 }
 
+function routeBombs(route) {
+  const endpointCells = route.harvestCellIndexes.map((index) => route.cells[index]);
+  return bombs.filter((bomb) => endpointCells.some((cell) => sameCell(cell, bomb)));
+}
+
+function loseCampaign() {
+  clearTimeout(animationFrame);
+  animating = false;
+  activeRoute = null;
+  program = [];
+  upgradeChoiceElement.hidden = true;
+  restartButton.hidden = true;
+  roundLedgerElement.hidden = true;
+  bombFinalScoreElement.textContent = capital.toLocaleString();
+  bombLossElement.hidden = false;
+  gameOverElement.hidden = false;
+  render();
+}
+
 function collectAtCell(cell) {
   const collected = pickups.filter((pickup) => sameCell(pickup, cell));
   if (collected.length === 0) return;
@@ -247,7 +288,14 @@ function animateRoute(route, onComplete) {
   const harvestCellIndexes = new Set(route.harvestCellIndexes);
   const step = () => {
     player = { ...route.cells[index] };
-    if (harvestCellIndexes.has(index)) collectAtCell(player);
+    if (harvestCellIndexes.has(index)) {
+      if (occupiedByBomb(player)) {
+        drawBoard();
+        window.setTimeout(loseCampaign, 180);
+        return;
+      }
+      collectAtCell(player);
+    }
     drawBoard();
     index += 1;
     if (index < route.cells.length) {
@@ -284,12 +332,13 @@ function render() {
   renderSegments();
   const route = buildRoute();
   const available = routePickups(route);
+  const threatenedBombs = routeBombs(route);
   const routeValue = available.reduce((total, pickup) => total + pickup.value, 0);
   const ready = program.length > 0 && route.inBounds;
 
   executeButton.disabled = !ready || gameOverElement.hidden === false || animating;
   executeButton.classList.toggle("ready", ready && gameOverElement.hidden && !animating);
-  routeValueElement.textContent = `+${routeValue}`;
+  routeValueElement.textContent = threatenedBombs.length > 0 ? "BOMB" : `+${routeValue}`;
   scoreElement.textContent = score;
   capitalElement.textContent = capital.toLocaleString();
   roundElement.textContent = round;
@@ -299,8 +348,12 @@ function render() {
   marketLevelElement.textContent = `+${marketLevel}`;
   taxRateElement.textContent = `${Math.round(wealthTaxRate * 100)}%`;
 
+  executeButton.classList.toggle("danger", threatenedBombs.length > 0 && ready);
+
   if (!route.inBounds) {
     statusElement.textContent = "Route leaves the board. Redirect one of the links.";
+  } else if (threatenedBombs.length > 0) {
+    statusElement.textContent = "DANGER — a segment endpoint lands on a bomb. Running this route ends the campaign.";
   } else if (routeValue > 0) {
     statusElement.textContent = `ROUTE READY — press Enter to harvest ${available.length} segment endpoint${available.length === 1 ? "" : "s"} worth ${routeValue}.`;
   } else if (program.length > 0) {
@@ -357,6 +410,25 @@ function drawBoard() {
     }
   });
 
+  bombs.forEach((bomb) => {
+    const centerX = (bomb.x + 0.5) * cellSize;
+    const centerY = (bomb.y + 0.5) * cellSize;
+    context.fillStyle = "#20211f";
+    context.beginPath();
+    context.arc(centerX, centerY + cellSize * 0.06, cellSize * 0.25, 0, Math.PI * 2);
+    context.fill();
+    context.strokeStyle = "#20211f";
+    context.lineWidth = 3;
+    context.beginPath();
+    context.moveTo(centerX + cellSize * 0.12, centerY - cellSize * 0.16);
+    context.quadraticCurveTo(centerX + cellSize * 0.28, centerY - cellSize * 0.35, centerX + cellSize * 0.36, centerY - cellSize * 0.25);
+    context.stroke();
+    context.fillStyle = "#ff6b4a";
+    context.beginPath();
+    context.arc(centerX + cellSize * 0.37, centerY - cellSize * 0.27, cellSize * 0.07, 0, Math.PI * 2);
+    context.fill();
+  });
+
   if (program.length > 0) {
     context.strokeStyle = route.inBounds ? "#20211f" : "#ff6b4a";
     context.lineWidth = 7;
@@ -395,6 +467,7 @@ document.querySelectorAll("[data-length]").forEach((button) => {
 executeButton.addEventListener("click", executeRoute);
 clearButton.addEventListener("click", clearProgram);
 restartButton.addEventListener("click", resetGame);
+bombRestartButton.addEventListener("click", resetGame);
 document.querySelectorAll("[data-upgrade]").forEach((button) => {
   button.addEventListener("click", () => chooseUpgrade(button.dataset.upgrade));
 });

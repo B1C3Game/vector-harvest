@@ -32,7 +32,7 @@
       <div class="board-wrap">
         <canvas id="board" width="800" height="800" aria-label="20 by 20 collection grid"></canvas>
         <div id="game-over" class="game-over" hidden>
-          <div class="ledger">
+          <div id="round-ledger" class="ledger">
             <p class="eyebrow" id="ledger-label">ROUND LEDGER</p>
             <h2 id="ledger-title">Round complete</h2>
             <dl>
@@ -52,6 +52,14 @@
               </div>
             </div>
             <button id="restart" class="restart-button" type="button" hidden>New campaign</button>
+          </div>
+          <div id="bomb-loss" class="bomb-loss" hidden>
+            <p class="eyebrow">CAMPAIGN LOST</p>
+            <div class="bomb-mark" aria-hidden="true">●</div>
+            <h2>Endpoint detonated</h2>
+            <p>A segment ended on a bomb. Crossed bombs are safe; endpoints are not.</p>
+            <p class="loss-score">Secured capital <strong id="bomb-final-score">0</strong></p>
+            <button id="bomb-restart" class="restart-button" type="button">New campaign</button>
           </div>
         </div>
       </div>
@@ -100,6 +108,7 @@
         <div class="legend" aria-label="Pickup legend">
           <span><i class="gem stable"></i> persistent pickup</span>
           <span><i class="gem urgent"></i> timed pickup</span>
+          <span><i class="bomb-dot"></i> endpoint bomb</span>
           <span>At risk: <strong id="at-risk">0</strong></span>
         </div>
       </aside>

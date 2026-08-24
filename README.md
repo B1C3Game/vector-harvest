@@ -19,6 +19,8 @@ Open `index.html` in a browser.
 
 Pickups are collected only at the endpoint of each segment, never from cells crossed along a segment. A four-command route can therefore harvest at most four pickups. Values `2`, `3`, and `5` remain until collected. Timed values `8` and `13` remain for two turns; the small number beside them shows their remaining lifetime.
 
+Each round also contains `5 + round` visible bombs. Crossing a bomb is safe, but ending any segment on one immediately ends the campaign. The route preview warns about a bomb endpoint before execution, making detonation an avoidable planning failure rather than a hidden random event.
+
 Each round contains ten turns. At round end, the current harvest is added to capital and the complete wealth is taxed. Choose one permanent mechanic before the next round: compound pickup yield by `1.5`, increase market density, or reduce wealth tax by two percentage points.
 
 The round economy is:
@@ -44,4 +46,4 @@ The included GitHub Actions workflow deploys the game to GitHub Pages on every p
 
 ## POC Boundary
 
-This build tests whether movement-driven harvesting remains interesting when player-selected scaling competes with continuous wealth taxation. It intentionally excludes enemies, inventory, terrain, and narrative progression.
+This build tests whether movement-driven harvesting remains interesting when visible endpoint hazards and player-selected scaling compete with continuous wealth taxation. It intentionally excludes enemies, inventory, terrain, and narrative progression.
