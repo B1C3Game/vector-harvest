@@ -19,9 +19,9 @@ Open `index.html` in a browser.
 
 Pickups are collected only at the endpoint of each segment, never from cells crossed along a segment. A four-command route can therefore harvest at most four pickups. Values `2`, `3`, and `5` remain until collected. Timed values `8` and `13` remain for two turns; the small number beside them shows their remaining lifetime.
 
-Each round also contains `5 + round` visible bombs. Crossing a bomb is safe, but ending any segment on one immediately ends the campaign. The route preview warns about a bomb endpoint before execution, making detonation an avoidable planning failure rather than a hidden random event.
+Every non-skip segment adds tax whether or not its endpoint contains a pickup. Every cell costs at least one fortieth of the round's base tax budget, with visible `2×` and `5×` outliers. Four segments per turn therefore add at least `0.01%` in round 1, and forty segments add at least `0.1%` over the round. This floor scales each round until forty base-tax segments cost `1%` in round 10. Crossing cells between endpoints is free, and skipped segments add no tax.
 
-Each round contains ten turns. At round end, the current harvest is added to capital and the complete wealth is taxed. Choose one permanent mechanic before the next round: compound pickup yield by `1.5`, increase market density, or reduce wealth tax by two percentage points.
+Each round contains ten turns. At round end, the current harvest is added to capital and the complete wealth is taxed. Choose one permanent mechanic before the next round: compound pickup yield by `1.5`, increase market density, or remove `20%` of the current wealth-tax rate.
 
 The round economy is:
 
@@ -46,4 +46,4 @@ The included GitHub Actions workflow deploys the game to GitHub Pages on every p
 
 ## POC Boundary
 
-This build tests whether movement-driven harvesting remains interesting when visible endpoint hazards and player-selected scaling compete with continuous wealth taxation. It intentionally excludes enemies, inventory, terrain, and narrative progression.
+This build tests whether movement-driven harvesting remains interesting when endpoint tax terrain and player-selected scaling compete with continuous wealth taxation. It intentionally excludes enemies, inventory, special tax-reset pickups, and narrative progression.

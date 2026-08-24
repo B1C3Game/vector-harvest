@@ -25,7 +25,7 @@
     <div class="build-strip" aria-label="Campaign modifiers">
       <span>Yield <strong id="yield-multiplier">×1.00</strong></span>
       <span>Market <strong id="market-level">+0</strong></span>
-      <span>Wealth tax <strong id="tax-rate">10%</strong></span>
+      <span>Wealth tax <strong id="tax-rate">0.00%</strong></span>
     </div>
 
     <section class="play-area">
@@ -39,7 +39,7 @@
               <div><dt>Opening capital</dt><dd id="ledger-opening">0</dd></div>
               <div><dt>Harvest</dt><dd id="ledger-harvest">+0</dd></div>
               <div><dt>Taxable wealth</dt><dd id="ledger-gross">0</dd></div>
-              <div><dt id="ledger-tax-label">Wealth tax 10%</dt><dd id="ledger-tax">−0</dd></div>
+              <div><dt id="ledger-tax-label">Wealth tax 0.00%</dt><dd id="ledger-tax">−0</dd></div>
               <div class="ledger-total"><dt>Closing capital</dt><dd id="final-score">0</dd></div>
             </dl>
             <p class="capital-history"><span>Capital history</span><strong id="capital-history">0</strong></p>
@@ -48,18 +48,10 @@
               <div class="upgrade-grid">
                 <button type="button" data-upgrade="yield"><strong>×1.5 Yield</strong><span>Future pickup values compound.</span></button>
                 <button type="button" data-upgrade="density"><strong>Dense Market</strong><span>+8 starting and +1 per-turn pickup.</span></button>
-                <button type="button" data-upgrade="shelter"><strong>Tax Shelter</strong><span>−2 percentage points permanently.</span></button>
+                <button type="button" data-upgrade="shelter"><strong>Tax Shelter</strong><span>Remove 20% of the current tax rate.</span></button>
               </div>
             </div>
             <button id="restart" class="restart-button" type="button" hidden>New campaign</button>
-          </div>
-          <div id="bomb-loss" class="bomb-loss" hidden>
-            <p class="eyebrow">CAMPAIGN LOST</p>
-            <div class="bomb-mark" aria-hidden="true">●</div>
-            <h2>Endpoint detonated</h2>
-            <p>A segment ended on a bomb. Crossed bombs are safe; endpoints are not.</p>
-            <p class="loss-score">Secured capital <strong id="bomb-final-score">0</strong></p>
-            <button id="bomb-restart" class="restart-button" type="button">New campaign</button>
           </div>
         </div>
       </div>
@@ -108,7 +100,8 @@
         <div class="legend" aria-label="Pickup legend">
           <span><i class="gem stable"></i> persistent pickup</span>
           <span><i class="gem urgent"></i> timed pickup</span>
-          <span><i class="bomb-dot"></i> endpoint bomb</span>
+          <span><i class="tax-cell low"></i> base-tax cell</span>
+          <span><i class="tax-cell high"></i> tax outlier</span>
           <span>At risk: <strong id="at-risk">0</strong></span>
         </div>
       </aside>
