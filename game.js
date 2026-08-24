@@ -45,6 +45,7 @@ const treasuryBenefitElement = document.querySelector("#treasury-benefit");
 const timedLifetimeElement = document.querySelector("#timed-lifetime");
 const upgradeGridElement = document.querySelector("#upgrade-grid");
 const lengthLabelElement = document.querySelector("#length-label");
+const keyboardStatusElement = document.querySelector("#keyboard-status");
 
 let player;
 let pickups;
@@ -71,6 +72,11 @@ let upgradeOffers;
 
 function randomInt(minimum, maximum) {
   return Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
+}
+
+function setKeyboardActive(active) {
+  keyboardStatusElement.classList.toggle("active", active);
+  keyboardStatusElement.querySelector("b").textContent = active ? "Keys active" : "Click game · keys off";
 }
 
 function sameCell(first, second) {
@@ -552,7 +558,10 @@ document.querySelectorAll("[data-length]").forEach((button) => {
 executeButton.addEventListener("click", executeRoute);
 clearButton.addEventListener("click", clearProgram);
 restartButton.addEventListener("click", resetGame);
+document.querySelector(".game-shell").addEventListener("pointerdown", () => setKeyboardActive(true));
+window.addEventListener("blur", () => setKeyboardActive(false));
 window.addEventListener("keydown", (event) => {
+  setKeyboardActive(true);
   if (event.repeat) {
     event.preventDefault();
     return;
