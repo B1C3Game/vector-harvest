@@ -76,6 +76,7 @@ function randomInt(minimum, maximum) {
 
 function setKeyboardActive(active) {
   keyboardStatusElement.classList.toggle("active", active);
+  keyboardStatusElement.closest("footer").classList.toggle("shortcuts-active", active);
   keyboardStatusElement.querySelector("b").textContent = active ? "Keys active" : "Click game · keys off";
 }
 
